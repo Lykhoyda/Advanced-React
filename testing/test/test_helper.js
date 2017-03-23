@@ -2,7 +2,7 @@ import jsdom from 'jsdom';
 import jquery from 'jquery';
 import TestUtils from 'react-addons-test-utils';
 import ReactDOM from 'react-dom';
-import chai, { expect } from 'chai';
+import chai, { expect, util } from 'chai';
 import React from 'react';
 import { Provider } from 'react-redux';
 import { createStore } from 'redux';
@@ -34,6 +34,6 @@ $.fn.simulate = function(eventName, value) {
 }
 
 // Set up chai-jquery
-chaiJquery(chai, chai.util, $);
+chaiJquery(chai, util, $);
 
 export { renderComponent, expect };
