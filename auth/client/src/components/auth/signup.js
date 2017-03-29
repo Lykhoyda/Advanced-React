@@ -1,78 +1,64 @@
 import React, { Component } from 'react';
-import { reduxForm } from 'redux-form';
 import * as actions from '../../actions';
+import { reduxForm, Field } from 'redux-form';
+import { connect } from 'react-redux'
+import { compose } from 'recompose'
+import validate from './validate';
+
+
+const renderField = ({ input, label, name, type, meta: { touched, error } }) => (
+    <fieldset className="form-group">
+        <label htmlFor={name}>{label}:</label>
+        <div>
+            <input {...input} id={name} placeholder={label} type={type} className="form-control" />
+            {touched && ((error && <span className="text-danger">{error}</span>))}
+        </div>
+    </fieldset>
+);
 
 class Signup extends Component {
-  handleFormSubmit(formProps) {
-    // Call action creator to sign up the user!
-    this.props.signupUser(formProps);
-  }
 
-  renderAlert() {
-    if (this.props.errorMessage) {
-      return (
-        <div className="alert alert-danger">
-          <strong>Oops!</strong> {this.props.errorMessage}
-        </div>
-      );
+    formSend = (values) => {
+        this.props.signupUser(values);
     }
-  }
 
-  render() {
-    const { handleSubmit, fields: { email, password, passwordConfirm }} = this.props;
+    renderAlert = () => {
+        if (this.props.errorMessage) {
+            return (
+                <div className="alert alert-danger">
+                    <strong>Oops!</strong> {this.props.errorMessage}
+                </div>
+            )
+        }
+    }
 
-    return (
-      <form onSubmit={handleSubmit(this.handleFormSubmit.bind(this))}>
-        <fieldset className="form-group">
-          <label>Email:</label>
-          <input className="form-control" {...email} />
-          {email.touched && email.error && <div className="error">{email.error}</div>}
-        </fieldset>
-        <fieldset className="form-group">
-          <label>Password:</label>
-          <input className="form-control" {...password} type="password" />
-          {password.touched && password.error && <div className="error">{password.error}</div>}
-        </fieldset>
-        <fieldset className="form-group">
-          <label>Confirm Password:</label>
-          <input className="form-control" {...passwordConfirm} type="password" />
-          {passwordConfirm.touched && passwordConfirm.error && <div className="error">{passwordConfirm.error}</div>}
-        </fieldset>
-        {this.renderAlert()}
-        <button action="submit" className="btn btn-primary">Sign up!</button>
-      </form>
-    );
-  }
+    render () {
+        const { handleSubmit } = this.props;
+
+        return (
+            <form onSubmit={ handleSubmit(this.formSend) }>
+                <Field name="email" component={renderField} label="Email" type="text"/>
+                <Field name="password" component={renderField} label="Password" type="password"/>
+                <Field name="passwordConfirm"  component={renderField} label="Confirm Password" type="password"/>
+                {this.renderAlert()}
+                <button action="submit" className="btn btn-primary">Sign up</button>
+            </form>
+        )
+    }
 }
 
-function validate(formProps) {
-  const errors = {};
-
-  if (!formProps.email) {
-    errors.email = 'Please enter an email';
-  }
-
-  if (!formProps.password) {
-    errors.password = 'Please enter a password';
-  }
-
-  if (!formProps.passwordConfirm) {
-    errors.passwordConfirm = 'Please enter a password confirmation';
-  }
-
-  if (formProps.password !== formProps.passwordConfirm) {
-    errors.password = 'Passwords must match';
-  }
-
-  return errors;
+const mapStateToProps = (state) => {
+    return { errorMessage: state.auth.error }
 }
 
-function mapStateToProps(state) {
-  return { errorMessage: state.auth.error };
+const formSettings = {
+    form: 'signup',
+    validate
 }
 
-export default reduxForm({
-  form: 'signup',
-  fields: ['email', 'password', 'passwordConfirm'],
-  validate
-}, mapStateToProps, actions)(Signup);
+const enhance = compose (
+    connect(mapStateToProps, actions),
+    reduxForm(formSettings)
+)
+ 
+export default enhance(Signup);
